@@ -72,13 +72,12 @@ int main() {
 	eset(clSetKernelArg(ocl.kernel, 2, sizeof(unsigned int), &board_ix));
 	eset(clSetKernelArg(ocl.kernel, 3, sizeof(unsigned int), &board_width));
 
-	size_t local_sizes[]  = {1, 1};
 	size_t global_sizes[] = {board_width, board_width};
 
 	printBoard(board);
 	// getchar();
 	for(;;) {
-		eset(clEnqueueNDRangeKernel(ocl.queue, ocl.kernel, 2, NULL, global_sizes, local_sizes, 0, NULL, NULL));
+		eset(clEnqueueNDRangeKernel(ocl.queue, ocl.kernel, 2, NULL, global_sizes, NULL, 0, NULL, NULL));
 		eset(clFinish(ocl.queue));
 
 		board_ix = 1 - board_ix;
