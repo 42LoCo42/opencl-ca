@@ -11,3 +11,7 @@ Run cellular automatons as OpenCL kernels
 ```
 3. Run with `make`
 4. For the best experience, set your terminal font to [this](https://strlen.com/files/square.ttf)
+
+## References
+- [clErrorString](./clutils.c#L3): from [this gist](https://gist.github.com/gavinb/5728887)
+- [This example](https://www.olcf.ornl.gov/tutorials/cpu-vector-addition/) and its [associated repo](https://github.com/olcf/vector_addition_tutorials)
