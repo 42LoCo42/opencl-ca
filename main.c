@@ -5,7 +5,7 @@
 
 #include "clutils.h"
 
-const size_t board_width = 75;
+const size_t board_width = 200;
 
 const char* source = "#include \"kernel.cl\"";
 struct termios term_attrs;
@@ -21,28 +21,17 @@ int sgn(int i) {
 
 void printBoard(unsigned int board[]) {
 	printf("\e[H");
-	for(size_t i = 0; i < board_width + 2; ++i) {
-		putchar('-');
-	}
-	putchar('\n');
-
 	for(size_t i = 0; i < board_width; ++i) {
-		putchar('|');
 		for(size_t j = 0; j < board_width; ++j) {
 			int cell = board[j + i * board_width];
-			printf("%s", cell ? "█" : " ");
+			printf("\e[38;5;%dm█", cell);
 		}
-		puts("|");
+		putchar('\n');
 	}
-
-	for(size_t i = 0; i < board_width + 2; ++i) {
-		putchar('-');
-	}
-	putchar('\n');
 }
 
 void printSpeed(int speed) {
-	printf("\rSpeed: %d", speed);
+	printf("\r\e[mSpeed: %d", speed);
 	fflush(stdout);
 }
 

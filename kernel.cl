@@ -1,7 +1,7 @@
 #include "spaces.cl"
 
 #define at(x, y) torus(board, board_width, x, y)
-#include "ca/life.cl"
+#include "ca/starwars.cl"
 
 kernel void entrypoint(
 	global uint* board_0,
