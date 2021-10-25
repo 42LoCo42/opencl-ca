@@ -1,4 +1,3 @@
-R"(
 #include "spaces.cl"
 
 #define at(x, y) torus(board, board_width, x, y)
@@ -20,4 +19,3 @@ kernel void entrypoint(
 
 	write_board[ix] = calc(read_board, board_width, x, y);
 }
-)"

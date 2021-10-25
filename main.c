@@ -3,9 +3,7 @@
 
 #include "clutils.h"
 
-const char* source =
-#include "kernel.cl"
-;
+const char* source = "#include \"kernel.cl\"";
 
 const size_t board_width = 75;
 

@@ -5,8 +5,7 @@ LDFLAGS := -lOpenCL
 run: main
 	./$<
 
-main: main.c clutils.c kernel.cl
-	$(CC) $(CFLAGS) $(LDFLAGS) $< clutils.c -o $@
+main: main.c clutils.c
 
 clean:
 	rm -f main
