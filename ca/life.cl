@@ -1,17 +1,10 @@
 uint calc(
 	global uint* board,
 	const  uint  board_width,
+	const  uint  board_height,
 	int          x,
 	int          y
 ) {
-	uint sum = 0;
-	sum += at(x - 1, y - 1);
-	sum += at(x - 1, y    );
-	sum += at(x - 1, y + 1);
-	sum += at(x    , y - 1);
-	sum += at(x    , y + 1);
-	sum += at(x + 1, y - 1);
-	sum += at(x + 1, y    );
-	sum += at(x + 1, y + 1);
+	uint sum = moore(board, board_width, board_height, x, y);
 	return sum == 3 || sum == 2 && at(x, y);
 }

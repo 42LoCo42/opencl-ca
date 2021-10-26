@@ -1,6 +1,7 @@
 uint calc(
 	global uint* board,
 	const  uint  board_width,
+	const  uint  board_height,
 	int          x,
 	int          y
 ) {

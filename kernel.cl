@@ -1,13 +1,14 @@
-#include "spaces.cl"
+#define at(x, y) torus(board, board_width, board_height, x, y)
 
-#define at(x, y) torus(board, board_width, x, y)
+#include "utils.cl"
 #include "ca/starwars.cl"
 
 kernel void entrypoint(
 	global uint* board_0,
 	global uint* board_1,
 	const  uint  board_ix,
-	const  uint  board_width
+	const  uint  board_width,
+	const  uint  board_height
 ) {
 	global uint* boards[]    = {board_0, board_1};
 	global uint* read_board  = boards[board_ix];
@@ -17,5 +18,5 @@ kernel void entrypoint(
 	int y = get_global_id(1);
 	uint ix = x + y * board_width;
 
-	write_board[ix] = calc(read_board, board_width, x, y);
+	write_board[ix] = calc(read_board, board_width, board_height, x, y);
 }

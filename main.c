@@ -2,13 +2,20 @@
 #include <termios.h>
 #include <time.h>
 #include <unistd.h>
+#include <sys/ioctl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <readline/readline.h>
 
 #include "clutils.h"
 
-const size_t board_width = 200;
+size_t board_width;
+size_t board_height;
+size_t board_cells;
 
 const char* source = "#include \"kernel.cl\"";
-struct termios term_attrs;
+
+struct termios term;
 
 double ceil(double d) {
 	int i = d;
@@ -21,41 +28,67 @@ int sgn(int i) {
 
 void printBoard(unsigned int board[]) {
 	printf("\e[H");
-	for(size_t i = 0; i < board_width; ++i) {
-		for(size_t j = 0; j < board_width; ++j) {
-			int cell = board[j + i * board_width];
+	for(size_t y = 0; y < board_height; ++y) {
+		for(size_t x = 0; x < board_width; ++x) {
+			int cell = board[x + y * board_width];
 			printf("\e[38;5;%dm█", cell);
 		}
-		putchar('\n');
+		if(y < board_height - 1) putchar('\n'); // don't break after last line
 	}
 }
 
-void printSpeed(int speed) {
-	printf("\r\e[mSpeed: %d", speed);
-	fflush(stdout);
+void termInputMode(int val) {
+	if(val) {
+		term.c_lflag |= ECHO | ICANON;
+		printf("\e[25h\n");
+	} else {
+		term.c_lflag &= ~(ECHO | ICANON);
+		printf("\e[25l\n");
+	}
+	tcsetattr(STDIN_FILENO, TCSAFLUSH, &term);
 }
 
 void exitfunc() {
-	tcsetattr(STDIN_FILENO, TCSAFLUSH, &term_attrs);
-	printf("\e[?25h"); // enable cursor
+	termInputMode(1);
+}
+
+int readNum(const char* prompt, int* out) {
+	int rc = 0;
+	termInputMode(1);
+
+	char* line = readline(prompt);
+	if(line) {
+		char* invalid;
+		long new = strtol(line, &invalid, 0);
+		if(*line != 0 && *invalid == 0) *out = new; // from readline(3)
+		free(line);
+		rc = 1;
+	}
+
+	termInputMode(0);
+	return rc;
 }
 
 int main() {
-	tcgetattr(STDIN_FILENO, &term_attrs);
-	struct termios raw = term_attrs;
-	raw.c_lflag &= ~(ECHO | ICANON);
-	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
-	printf("\e[?25l"); // disable cursor
+	tcgetattr(STDIN_FILENO, &term);
+	termInputMode(0);
 	atexit(exitfunc);
+
+	// read terminal size
+	struct winsize winsize;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &winsize);
+	board_width  = winsize.ws_col;
+	board_height = winsize.ws_row;
+	board_cells = board_width * board_height;
 
 	int rc = 0;
 
-	unsigned int board[board_width * board_width];
-	const size_t bytes = sizeof(board);
+	const size_t bytes = sizeof(unsigned int) * board_cells;
+	unsigned int* board = malloc(bytes);
 
 	// fill board randomly
 	srand(time(NULL));
-	for(size_t i = 0; i < board_width * board_width; ++i) {
+	for(size_t i = 0; i < board_width * board_height; ++i) {
 		board[i] = rand() % 2 == 0;
 	}
 
@@ -65,6 +98,7 @@ int main() {
 
 	cl_mem mem_board_0;
 	cl_mem mem_board_1;
+	cl_mem* boards[] = {&mem_board_0, &mem_board_1};
 
 	eref(mem_board_0 = clCreateBuffer(ocl.context, CL_MEM_READ_WRITE, bytes, NULL, &rc));
 	eref(mem_board_1 = clCreateBuffer(ocl.context, CL_MEM_READ_WRITE, bytes, NULL, &rc));
@@ -76,12 +110,14 @@ int main() {
 	eset(clSetKernelArg(ocl.kernel, 1, sizeof(cl_mem), &mem_board_1));
 	eset(clSetKernelArg(ocl.kernel, 2, sizeof(unsigned int), &board_ix));
 	eset(clSetKernelArg(ocl.kernel, 3, sizeof(unsigned int), &board_width));
+	eset(clSetKernelArg(ocl.kernel, 4, sizeof(unsigned int), &board_height));
 
 	int poll_timeout = -1;
+	int poll_timeout_storage = 25;
 
-	int running   = 1; // if the program is running
-	int automatic = 0; // if the CA advances automatically
-	int speed     = 1; // how many CA iterations per step
+	int running    = 1; // if the program is running
+	int automatic  = 0; // if the CA advances automatically
+	int iterations = 1; // how many CA iterations per step
 
 	printBoard(board);
 	while(running) {
@@ -93,22 +129,23 @@ int main() {
 			char c = getchar();
 			switch(c) {
 				case 'q': running = 0; break;
-				case '\n':
-					poll_timeout = poll_timeout - sgn(poll_timeout) * 126;
-					automatic = 1 - automatic;
-					break;
-				case '+': speed++;    printSpeed(speed); break;
-				case '-': speed--;    printSpeed(speed); break;
-				case '*': speed *= 2; printSpeed(speed); break;
-				case '_': speed /= 2; printSpeed(speed); break;
 				case ' ': do_step = 1; break;
+				case '\n':
+					// toggle automatic
+					automatic ^= 1;
+					// swap timeouts
+					poll_timeout ^= poll_timeout_storage;
+					poll_timeout_storage ^= poll_timeout;
+					poll_timeout ^= poll_timeout_storage;
+					break;
+				case 'i': readNum("\r\e[mIterations: ", &iterations); break;
+				case 't': readNum("\r\e[mTimeout (in ms): ", &poll_timeout); break;
 			}
 		} else if(automatic) do_step = 1;
 
 		if(do_step) {
-			cl_mem* boards[] = {&mem_board_0, &mem_board_1};
-			for(int i = 0; i < speed; ++i) {
-				size_t global_sizes[] = {board_width, board_width};
+			for(int i = 0; i < iterations; ++i) {
+				size_t global_sizes[] = {board_width, board_height};
 
 				eset(clEnqueueNDRangeKernel(ocl.queue, ocl.kernel, 2, NULL, global_sizes, NULL, 0, NULL, NULL));
 				eset(clFinish(ocl.queue));
@@ -125,4 +162,5 @@ int main() {
 	eset(clReleaseMemObject(mem_board_1));
 	eset(clReleaseMemObject(mem_board_0));
 	clFullCleanup(ocl);
+	free(board);
 }

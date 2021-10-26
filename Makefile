@@ -1,6 +1,5 @@
-# CFLAGS := -g -Wall -Wextra
 CFLAGS := -O2 -Wall -Wextra
-LDFLAGS := -lOpenCL
+LDFLAGS := -lOpenCL -lreadline
 
 run: main
 	./$<
