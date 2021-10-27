@@ -76,7 +76,7 @@ int main() {
 
 	// read terminal size
 	struct winsize winsize;
-    ioctl(STDOUT_FILENO, TIOCGWINSZ, &winsize);
+	ioctl(STDOUT_FILENO, TIOCGWINSZ, &winsize);
 	board_width  = winsize.ws_col;
 	board_height = winsize.ws_row;
 	board_cells = board_width * board_height;
@@ -149,7 +149,7 @@ int main() {
 
 				eset(clEnqueueNDRangeKernel(ocl.queue, ocl.kernel, 2, NULL, global_sizes, NULL, 0, NULL, NULL));
 				eset(clFinish(ocl.queue));
-				board_ix = 1 - board_ix; // switch boards
+				board_ix ^= 1; // switch boards
 				eset(clSetKernelArg(ocl.kernel, 2, sizeof(unsigned int), &board_ix));
 			}
 
