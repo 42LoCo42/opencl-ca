@@ -15,9 +15,9 @@ Run cellular automatons as OpenCL kernels
 ## Controls
 - q to quit
 - Return to toggle automatic mode
-- + and * to increase/double speed
-- - and _ to decrease/halve speed
 - Space to do one step in non-automatic mode
+- i to change the number of iterations per output step
+- t to change the delay between output steps
 
 ## References
 - [clErrorString](./clutils.c#L3): from [this gist](https://gist.github.com/gavinb/5728887)
