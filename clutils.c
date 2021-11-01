@@ -63,9 +63,13 @@ OpenCLData clFullSetup(const char* kernel_source, const char* entrypoint) {
 	eref(data.program = clCreateProgramWithSource(data.context, 1, &kernel_source, NULL, &rc));
 
 	if(clBuildProgram(data.program, 0, NULL, NULL, NULL, NULL) != CL_SUCCESS) {
-		char build_log[4096];
-		eset(clGetProgramBuildInfo(data.program, data.device_id, CL_PROGRAM_BUILD_LOG, 4096, build_log, NULL));
+		size_t build_log_size;
+		eset(clGetProgramBuildInfo(data.program, data.device_id, CL_PROGRAM_BUILD_LOG, 0, NULL, &build_log_size));
+		printf("%lu\n", build_log_size);
+		char* build_log = malloc(build_log_size);
+		eset(clGetProgramBuildInfo(data.program, data.device_id, CL_PROGRAM_BUILD_LOG, build_log_size, build_log, NULL));
 		errx(1, "Build failure:\n%s", build_log);
+		free(build_log);
 	}
 
 	eref(data.kernel  = clCreateKernel(data.program, entrypoint, &rc));

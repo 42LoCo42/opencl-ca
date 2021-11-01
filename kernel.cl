@@ -1,7 +1,7 @@
-#define at(x, y) torus(board, board_width, board_height, x, y)
+#define at(x, y) closed(board, board_width, board_height, x, y)
 
 #include "utils.cl"
-#include "ca/starwars.cl"
+#include "ca/mazesolver.cl"
 
 kernel void entrypoint(
 	global uint* board_0,

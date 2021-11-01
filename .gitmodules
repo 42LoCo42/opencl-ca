@@ -1,0 +1,3 @@
+[submodule "mazegen"]
+	path = mazegen
+	url = https://github.com/42LoCo42/mazegen

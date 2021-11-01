@@ -4,7 +4,7 @@ LDFLAGS := -lOpenCL -lreadline
 run: main
 	./$<
 
-main: main.c clutils.c
+main: main.c clutils.c mazegen/mazegen.c
 
 clean:
 	rm -f main

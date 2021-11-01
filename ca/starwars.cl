@@ -1,10 +1,4 @@
-uint calc(
-	global uint* board,
-	const  uint  board_width,
-	const  uint  board_height,
-	int          x,
-	int          y
-) {
+uint calc(PARAMS) {
 	int me = at(x, y);
 
 	if(me == 0) {
