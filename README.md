@@ -22,3 +22,5 @@ Run cellular automatons as OpenCL kernels
 ## References
 - [clErrorString](./clutils.c#L3): from [this gist](https://gist.github.com/gavinb/5728887)
 - [This example](https://www.olcf.ornl.gov/tutorials/cpu-vector-addition/) and its [associated repo](https://github.com/olcf/vector_addition_tutorials)
+- [This blogpost](https://weblog.jamisbuck.org/2011/1/20/maze-generation-wilson-s-algorithm.html) about Wilson's algorithm
+- [This blogpost](https://nullprogram.com/blog/2014/06/22) about a maze solving CA
