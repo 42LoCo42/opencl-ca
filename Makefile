@@ -1,12 +1,19 @@
 CFLAGS := -O2 -Wall -Wextra
 LDFLAGS := -lOpenCL -lreadline
 
+.PHONY: run clean
+
 run: main
 	./$<
-
-main: main.c clutils.c mazegen/mazegen.c
 
 clean:
 	rm -f main
 
-.PHONY: run clean
+submodules:
+	git submodule init
+	git submodule update
+	touch $@
+
+main: main.c clutils.c mazegen/mazegen.c
+
+mazegen/mazegen.c: submodules
