@@ -116,10 +116,8 @@ int main() {
 
 	if(maze_mode) {
 		mazegen_lerw((int*) board, board_width, board_height);
-		board[0] = 2;
-		board[board_cells - 1] = 3;
-		board[board_cells - 2] = 1;
-		board[board_cells - board_width - 1] = 1;
+		board[0] = START;
+		board[board_cells / 2 * 2 - 1] = END;
 	} else {
 		// fill board randomly
 		for(size_t i = 0; i < board_width * board_height; ++i) {
@@ -147,12 +145,18 @@ int main() {
 	eset(clSetKernelArg(ocl.kernel, 3, sizeof(unsigned int), &board_width));
 	eset(clSetKernelArg(ocl.kernel, 4, sizeof(unsigned int), &board_height));
 
-	int poll_timeout = 25;
-	int poll_timeout_storage = -1;
+	int poll_timeout = -1;
+	int poll_timeout_storage = 25;
 
 	int running    = 1; // if the program is running
-	int automatic  = 1; // if the CA advances automatically
+	int automatic  = 0; // if the CA advances automatically
 	int iterations = 1; // how many CA iterations per step
+
+	if(maze_mode) {
+		poll_timeout = 10;
+		poll_timeout_storage = -1;
+		automatic = 1;
+	}
 
 	printBoard(board);
 	while(running) {
