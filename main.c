@@ -117,7 +117,7 @@ int main() {
 	if(maze_mode) {
 		mazegen_lerw((int*) board, board_width, board_height);
 		board[0] = START;
-		board[board_cells / 2 * 2 - 1] = END;
+		board[board_cells - 2] = END;
 	} else {
 		// fill board randomly
 		for(size_t i = 0; i < board_width * board_height; ++i) {
